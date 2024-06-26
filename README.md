@@ -1,1 +1,1 @@
-# Claims_Management_System
+# Claims Management System
