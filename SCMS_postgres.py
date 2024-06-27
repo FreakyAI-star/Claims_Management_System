@@ -6,6 +6,7 @@ import re
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
+import os
 
 class ClaimStatus(Enum):
     SUBMITTED = "Submitted"
@@ -54,13 +55,15 @@ class DatabaseError(Exception):
 
 @contextmanager
 def get_db_connection():
-    conn = psycopg2.connect(
-        dbname="claims_management",
-        user="postgres",
-        password="********",
-        host="localhost",
-        port="5432"
-    )
+    # conn = psycopg2.connect(
+    #     dbname="claims_management",
+    #     user="postgres",
+    #     password="********",
+    #     host="localhost",
+    #     port="5432"
+    # )
+    DATABASE_URL = os.environ['DATABASE_URL']
+    conn = psycopg2.connect(DATABASE_URL)
     try:
         yield conn
     finally:
@@ -522,4 +525,4 @@ def handle_business_rule_violation(error):
     return jsonify({"error": str(error)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
