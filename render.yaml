@@ -2,7 +2,10 @@ services:
   - type: web
     name: claims-management-system
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      # Install system dependencies
+      apt-get update && apt-get install -y libpq-dev
+      pip install -r requirements.txt
     startCommand: gunicorn SCMS_postgres:app
     envVars:
       - key: PYTHON_VERSION
