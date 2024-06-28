@@ -347,7 +347,7 @@ def parse_date(date_string):
 
 @app.route('/', methods=['GET'])
 def hello():
-    return "Hello World"
+    return "Welcome to the Claims Management System"
 
 # Policyholder endpoints
 @app.route('/policyholders', methods=['POST'])
