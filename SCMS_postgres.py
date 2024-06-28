@@ -345,6 +345,10 @@ cms = ClaimsManagementSystem()
 def parse_date(date_string):
     return datetime.strptime(date_string, "%Y-%m-%d")
 
+@app.route('/', methods=['GET'])
+def hello():
+    return "Hello World"
+
 # Policyholder endpoints
 @app.route('/policyholders', methods=['POST'])
 def create_policyholder():
