@@ -87,7 +87,7 @@ class ClaimsManagementSystem:
             with conn.cursor() as cur:
                 # Create your tables here
                 cur.execute("""
-                    CREATE TABLE IN NOT EXISTS policyholders (
+                    CREATE TABLE IF NOT EXISTS policyholders (
                         id SERIAL PRIMARY KEY,
                         name VARCHAR(100) NOT NULL,
                         contact_number VARCHAR(20) NOT NULL,
@@ -96,7 +96,7 @@ class ClaimsManagementSystem:
                     )
                 """)
                 cur.execute("""
-                    CREATE TABLE IN NOT EXISTS policies (
+                    CREATE TABLE IF NOT EXISTS policies (
                         id SERIAL PRIMARY KEY,
                         policyholder_id INTEGER NOT NULL,
                         type VARCHAR(50) NOT NULL,
@@ -108,7 +108,7 @@ class ClaimsManagementSystem:
                     )
                 """)
                 cur.execute("""
-                    CREATE TABLE IN NOT EXISTS claims (
+                    CREATE TABLE IF NOT EXISTS claims (
                         id SERIAL PRIMARY KEY,
                         policy_id INTEGER NOT NULL,
                         date_of_incident DATE NOT NULL,
