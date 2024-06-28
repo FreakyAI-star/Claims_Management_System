@@ -82,7 +82,7 @@ class ClaimsManagementSystem:
                 raise DatabaseError(str(e))
     
     # Initializes entities in the database if not already present
-    def init_db():
+    def init_db(self):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Create your tables here
