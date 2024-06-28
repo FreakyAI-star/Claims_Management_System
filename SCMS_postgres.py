@@ -80,6 +80,46 @@ class ClaimsManagementSystem:
             except psycopg2.Error as e:
                 conn.rollback()
                 raise DatabaseError(str(e))
+    
+    # Initializes entities in the database if not already present
+    def init_db():
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Create your tables here
+                cur.execute("""
+                    CREATE TABLE IN NOT EXISTS policyholders (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        contact_number VARCHAR(20) NOT NULL,
+                        email VARCHAR(100) NOT NULL UNIQUE,
+                        date_of_birth DATE NOT NULL
+                    )
+                """)
+                cur.execute("""
+                    CREATE TABLE IN NOT EXISTS policies (
+                        id SERIAL PRIMARY KEY,
+                        policyholder_id INTEGER NOT NULL,
+                        type VARCHAR(50) NOT NULL,
+                        start_date DATE NOT NULL,
+                        end_date DATE NOT NULL,
+                        coverage_amount DECIMAL(10, 2) NOT NULL,
+                        premium DECIMAL(10, 2) NOT NULL,
+                        FOREIGN KEY (policyholder_id) REFERENCES policyholders(id) ON DELETE CASCADE 
+                    )
+                """)
+                cur.execute("""
+                    CREATE TABLE IN NOT EXISTS claims (
+                        id SERIAL PRIMARY KEY,
+                        policy_id INTEGER NOT NULL,
+                        date_of_incident DATE NOT NULL,
+                        description TEXT NOT NULL,
+                        amount DECIMAL(10, 2) NOT NULL,
+                        status VARCHAR(20) NOT NULL,
+                        date_submitted DATE NOT NULL,
+                        FOREIGN KEY (policy_id) REFERENCES policies(id) ON DELETE CASCADE
+                    )
+                """)
+            conn.commit()
 
     # Policyholder CRUD operations
     def create_policyholder(self, policyholder: Policyholder) -> None:
@@ -340,6 +380,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 cms = ClaimsManagementSystem()
+cms.init_db()
 
 # Helper function to parse dates
 def parse_date(date_string):
