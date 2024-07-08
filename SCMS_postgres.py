@@ -55,15 +55,15 @@ class DatabaseError(Exception):
 
 @contextmanager
 def get_db_connection():
-    # conn = psycopg2.connect(
-    #     dbname="claims_management",
-    #     user="postgres",
-    #     password="********",
-    #     host="localhost",
-    #     port="5432"
-    # )
-    DATABASE_URL = os.environ['DATABASE_URL']
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg2.connect(
+        dbname="claims_management",
+        user="postgres",
+        password="********",
+        host="localhost",
+        port="5432"
+    )
+    # DATABASE_URL = os.environ['DATABASE_URL']
+    # conn = psycopg2.connect(DATABASE_URL)
     try:
         yield conn
     finally:
@@ -139,6 +139,15 @@ class ClaimsManagementSystem:
                 return Policyholder(**result)
             return None
         return self._execute_transaction(_get)
+    
+    def getAll_policyholder(self) -> Optional[Policyholder]:
+        def _get(cur):
+            cur.execute("SELECT * FROM policyholders")
+            result = cur.fetchall()
+            if result:
+                return result
+            return None
+        return self._execute_transaction(_get)
 
     def update_policyholder(self, policyholder_id: str, name: Optional[str] = None, 
                             contact_number: Optional[str] = None, email: Optional[str] = None,
@@ -197,6 +206,15 @@ class ClaimsManagementSystem:
             result = cur.fetchone()
             if result:
                 return Policy(**result)
+            return None
+        return self._execute_transaction(_get)
+    
+    def getAll_policy(self) -> Optional[Policy]:
+        def _get(cur):
+            cur.execute("SELECT * FROM policies")
+            result = cur.fetchall()
+            if result:
+                return result
             return None
         return self._execute_transaction(_get)
 
@@ -263,6 +281,15 @@ class ClaimsManagementSystem:
             if result:
                 result['status'] = ClaimStatus(result['status'])
                 return Claim(**result)
+            return None
+        return self._execute_transaction(_get)
+    
+    def getAll_claim(self) -> Optional[Claim]:
+        def _get(cur):
+            cur.execute("SELECT * FROM claims")
+            result = cur.fetchall()
+            if result:
+                return result
             return None
         return self._execute_transaction(_get)
 
@@ -377,8 +404,10 @@ class ClaimsManagementSystem:
 #-------------------------------------------------------------
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 cms = ClaimsManagementSystem()
 cms.init_db()
 
@@ -406,6 +435,13 @@ def create_policyholder():
         return jsonify({"message": "Policyholder created successfully"}), 201
     except (ValidationError, BusinessRuleViolation) as e:
         return jsonify({"error": str(e)}), 400
+
+@app.route('/policyholders', methods=['GET'])
+def getAll_policyholder():
+    policyholders = cms.getAll_policyholder()
+    if policyholders:
+        return jsonify(policyholders)
+    return jsonify({"error": "Policyholders not found"}), 404
 
 @app.route('/policyholders/<policyholder_id>', methods=['GET'])
 def get_policyholder(policyholder_id):
@@ -461,6 +497,13 @@ def create_policy():
         return jsonify({"message": "Policy created successfully"}), 201
     except (ValidationError, BusinessRuleViolation) as e:
         return jsonify({"error": str(e)}), 400
+    
+@app.route('/policies', methods=['GET'])
+def getAll_policy():
+    policies = cms.getAll_policy()
+    if policies:
+        return jsonify(policies)
+    return jsonify({"error": "Policies not found"}), 404
 
 @app.route('/policies/<policy_id>', methods=['GET'])
 def get_policy(policy_id):
@@ -520,6 +563,13 @@ def create_claim():
     except (ValidationError, BusinessRuleViolation) as e:
         return jsonify({"error": str(e)}), 400
 
+@app.route('/claims', methods=['GET'])
+def getAll_claim():
+    claims = cms.getAll_claim()
+    if claims:
+        return jsonify(claims)
+    return jsonify({"error": "Claims not found"}), 404
+
 @app.route('/claims/<claim_id>', methods=['GET'])
 def get_claim(claim_id):
     claim = cms.get_claim(claim_id)
@@ -570,4 +620,5 @@ def handle_business_rule_violation(error):
     return jsonify({"error": str(error)}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
+    # app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
+    app.run(port=5000, debug=True)
